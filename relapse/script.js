@@ -218,18 +218,46 @@ const adminCredentials = {
     password: "secure456"
 };
 
-// Store ratings in localStorage
-function saveRating(rating, message, senderName) {
-    const ratings = JSON.parse(localStorage.getItem('websiteRatings') || '[]');
-    const newRating = {
-        id: Date.now(),
-        rating: rating,
-        message: message,
-        sender: senderName,
-        timestamp: new Date().toLocaleString()
-    };
-    ratings.push(newRating);
-    localStorage.setItem('websiteRatings', JSON.stringify(ratings));
+// Store ratings on server
+async function saveRating(rating, message, senderName) {
+    try {
+        const response = await fetch('/api/ratings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                rating: rating,
+                message: message,
+                sender: senderName,
+                timestamp: new Date().toLocaleString()
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to save rating');
+        }
+        
+        return await response.json();
+    } catch (error) {
+        console.error('Error saving rating:', error);
+        alert('Failed to save rating. Please try again.');
+        return null;
+    }
+}
+
+// Get all ratings from server
+async function getRatings() {
+    try {
+        const response = await fetch('/api/ratings');
+        if (!response.ok) {
+            throw new Error('Failed to get ratings');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error getting ratings:', error);
+        return [];
+    }
 }
 
 // Rating System Functions
@@ -260,7 +288,7 @@ function setRating(rating) {
     });
 }
 
-function submitRating() {
+async function submitRating() {
     const message = document.getElementById('ratingMessage').value.trim();
     const senderName = document.getElementById('senderName').value.trim();
     
@@ -279,49 +307,92 @@ function submitRating() {
         return;
     }
     
-    saveRating(currentRating, message, senderName);
-    alert('Thank you for your rating!');
-    closeRatingModal();
+    const result = await saveRating(currentRating, message, senderName);
+    if (result) {
+        alert('Thank you for your rating!');
+        closeRatingModal();
+    }
 }
 
-// Store heart reactions in localStorage
-function saveHeartReaction(ratingId, userId) {
-    const reactions = JSON.parse(localStorage.getItem('ratingReactions') || '{}');
-    if (!reactions[ratingId]) {
-        reactions[ratingId] = [];
-    }
-    
-    // Check if user already reacted
-    const existingReaction = reactions[ratingId].find(r => r.userId === userId);
-    if (!existingReaction) {
-        reactions[ratingId].push({
-            userId: userId,
-            timestamp: new Date().toLocaleString()
+// Store heart reactions on server
+async function saveHeartReaction(ratingId, userId) {
+    try {
+        const response = await fetch('/api/reactions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                ratingId: ratingId,
+                userId: userId,
+                action: 'add'
+            })
         });
-        localStorage.setItem('ratingReactions', JSON.stringify(reactions));
-        return true; // New reaction added
+        
+        if (!response.ok) {
+            throw new Error('Failed to save reaction');
+        }
+        
+        const result = await response.json();
+        return result.success;
+    } catch (error) {
+        console.error('Error saving reaction:', error);
+        return false;
     }
-    return false; // User already reacted
 }
 
-function removeHeartReaction(ratingId, userId) {
-    const reactions = JSON.parse(localStorage.getItem('ratingReactions') || '{}');
-    if (reactions[ratingId]) {
-        reactions[ratingId] = reactions[ratingId].filter(r => r.userId !== userId);
-        localStorage.setItem('ratingReactions', JSON.stringify(reactions));
-        return true;
+async function removeHeartReaction(ratingId, userId) {
+    try {
+        const response = await fetch('/api/reactions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                ratingId: ratingId,
+                userId: userId,
+                action: 'remove'
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to remove reaction');
+        }
+        
+        const result = await response.json();
+        return result.success;
+    } catch (error) {
+        console.error('Error removing reaction:', error);
+        return false;
     }
-    return false;
 }
 
-function getReactionCount(ratingId) {
-    const reactions = JSON.parse(localStorage.getItem('ratingReactions') || '{}');
-    return reactions[ratingId] ? reactions[ratingId].length : 0;
+async function getReactionCount(ratingId) {
+    try {
+        const response = await fetch(`/api/reactions/${ratingId}`);
+        if (!response.ok) {
+            throw new Error('Failed to get reaction count');
+        }
+        const result = await response.json();
+        return result.count;
+    } catch (error) {
+        console.error('Error getting reaction count:', error);
+        return 0;
+    }
 }
 
-function hasUserReacted(ratingId, userId) {
-    const reactions = JSON.parse(localStorage.getItem('ratingReactions') || '{}');
-    return reactions[ratingId] ? reactions[ratingId].some(r => r.userId === userId) : false;
+async function hasUserReacted(ratingId, userId) {
+    try {
+        const response = await fetch(`/api/reactions/${ratingId}/${userId}`);
+        if (!response.ok) {
+            throw new Error('Failed to check user reaction');
+        }
+        const result = await response.json();
+        return result.hasReacted;
+    } catch (error) {
+        console.error('Error checking user reaction:', error);
+        return false;
+    }
 }
 
 // Generate or get user ID for reactions
@@ -379,17 +450,17 @@ function stopBibleVerseRotation() {
 }
 
 // Dashboard Functions
-function openDashboard() {
-    const ratings = JSON.parse(localStorage.getItem('websiteRatings') || '[]');
+async function openDashboard() {
+    const ratings = await getRatings();
     const ratingsContainer = document.getElementById('ratingsContainer');
     const currentUserId = getUserId();
     
     if (ratings.length === 0) {
         ratingsContainer.innerHTML = '<p class="no-ratings">No ratings yet</p>';
     } else {
-        ratingsContainer.innerHTML = ratings.map(rating => {
-            const reactionCount = getReactionCount(rating.id);
-            const hasReacted = hasUserReacted(rating.id, currentUserId);
+        const ratingsHtml = await Promise.all(ratings.map(async (rating) => {
+            const reactionCount = await getReactionCount(rating.id);
+            const hasReacted = await hasUserReacted(rating.id, currentUserId);
             
             return `
                 <div class="rating-card">
@@ -419,7 +490,9 @@ function openDashboard() {
                     </div>
                 </div>
             `;
-        }).join('');
+        }));
+        
+        ratingsContainer.innerHTML = ratingsHtml.join('');
     }
     
     document.getElementById('dashboard').classList.add('show');
@@ -429,31 +502,37 @@ function closeDashboard() {
     document.getElementById('dashboard').classList.remove('show');
 }
 
-function toggleHeartReaction(ratingId) {
+async function toggleHeartReaction(ratingId) {
     const currentUserId = getUserId();
     const heartBtn = document.getElementById(`heartBtn_${ratingId}`);
     const heartCount = document.getElementById(`heartCount_${ratingId}`);
     
-    if (hasUserReacted(ratingId, currentUserId)) {
+    const hasReacted = await hasUserReacted(ratingId, currentUserId);
+    
+    if (hasReacted) {
         // Remove reaction
-        removeHeartReaction(ratingId, currentUserId);
-        heartBtn.classList.remove('liked');
-        
-        // Add animation for unlike
-        heartBtn.classList.add('unliked');
-        setTimeout(() => heartBtn.classList.remove('unliked'), 300);
+        const success = await removeHeartReaction(ratingId, currentUserId);
+        if (success) {
+            heartBtn.classList.remove('liked');
+            
+            // Add animation for unlike
+            heartBtn.classList.add('unliked');
+            setTimeout(() => heartBtn.classList.remove('unliked'), 300);
+        }
     } else {
         // Add reaction
-        saveHeartReaction(ratingId, currentUserId);
-        heartBtn.classList.add('liked');
-        
-        // Add animation for like
-        heartBtn.classList.add('pulse');
-        setTimeout(() => heartBtn.classList.remove('pulse'), 600);
+        const success = await saveHeartReaction(ratingId, currentUserId);
+        if (success) {
+            heartBtn.classList.add('liked');
+            
+            // Add animation for like
+            heartBtn.classList.add('pulse');
+            setTimeout(() => heartBtn.classList.remove('pulse'), 600);
+        }
     }
     
     // Update count and text
-    const newCount = getReactionCount(ratingId);
+    const newCount = await getReactionCount(ratingId);
     heartCount.textContent = newCount;
     
     // Update reaction text
@@ -483,14 +562,64 @@ function resetGame() {
     selectNewRandomWord();
 }
 
+// View counter functionality
+async function trackView() {
+    try {
+        const response = await fetch('/api/views', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                timestamp: new Date().toLocaleString(),
+                userAgent: navigator.userAgent
+            })
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            updateViewCounter(result.totalViews);
+        }
+    } catch (error) {
+        console.error('Error tracking view:', error);
+    }
+}
+
+async function getViewCount() {
+    try {
+        const response = await fetch('/api/views');
+        if (response.ok) {
+            const result = await response.json();
+            return result.totalViews;
+        }
+    } catch (error) {
+        console.error('Error getting view count:', error);
+    }
+    return 0;
+}
+
+function updateViewCounter(count) {
+    const viewCountElement = document.getElementById('viewCount');
+    if (viewCountElement) {
+        viewCountElement.textContent = count;
+    }
+}
+
 // Focus input on load
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     // Set initial random word
     document.querySelector('.word-display').textContent = targetWord;
     userInput.focus();
     
     // Initialize background music (will start when user completes spelling)
     initializeBackgroundMusic();
+    
+    // Track page view
+    await trackView();
+    
+    // Update view counter display
+    const viewCount = await getViewCount();
+    updateViewCounter(viewCount);
     
     // Add event listeners for rating system
     document.getElementById('rateButton').addEventListener('click', openRatingModal);
