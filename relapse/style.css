@@ -207,8 +207,20 @@ h1 {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
-  animation: shimmer 4s infinite;
+  background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.3), rgba(255, 255, 255, 0.5), rgba(135, 206, 250, 0.3), transparent);
+  animation: heavenlyGlow 6s infinite;
+}
+
+.bible-verse-container::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, rgba(255, 255, 255, 0.05) 30%, transparent 60%);
+  animation: heavenlyLight 8s infinite;
+  pointer-events: none;
 }
 
 .bible-verse {
@@ -219,7 +231,15 @@ h1 {
   font-style: italic;
   font-weight: 300;
   letter-spacing: 0.5px;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  text-shadow: 0 2px 10px rgba(255, 215, 0, 0.3), 0 0 20px rgba(135, 206, 250, 0.2);
+  background: linear-gradient(45deg, #4a5568, #667eea, #87ceeb, #ffd700, #4a5568);
+  background-size: 400% 400%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: heavenlyText 10s ease infinite;
+  position: relative;
+  z-index: 2;
 }
 
 .credit-container {
@@ -329,6 +349,84 @@ h1 {
   }
 }
 
+@keyframes heavenlyGlow {
+  0% {
+    left: -100%;
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes heavenlyLight {
+  0% {
+    transform: rotate(0deg) scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: rotate(180deg) scale(1.2);
+    opacity: 0.7;
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+    opacity: 0.3;
+  }
+}
+
+@keyframes heavenlyText {
+  0% {
+    background-position: 0% 50%;
+  }
+  25% {
+    background-position: 100% 50%;
+  }
+  50% {
+    background-position: 50% 100%;
+  }
+  75% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 50% 0%;
+  }
+}
+
+.game-controls {
+  margin-top: 25px;
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.control-btn {
+  padding: 12px 25px;
+  background: linear-gradient(135deg, #4ecdc4, #44a08d);
+  color: white;
+  border: none;
+  border-radius: 15px;
+  font-size: 1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 20px rgba(78, 205, 196, 0.3);
+  min-width: 120px;
+}
+
+.control-btn:hover {
+  background: linear-gradient(135deg, #44a08d, #4ecdc4);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(78, 205, 196, 0.4);
+}
+
 @media (max-width: 768px) {
   .content {
     padding: 30px 15px;
@@ -391,6 +489,18 @@ h1 {
 
   .credit-text {
     font-size: 1em;
+  }
+
+  .game-controls {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .control-btn {
+    width: 100%;
+    max-width: 200px;
+    padding: 15px 20px;
   }
 }
 

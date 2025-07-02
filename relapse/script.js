@@ -1,4 +1,14 @@
-const targetWord = "matutulog";
+// Array of 25 random spell words
+const spellWords = [
+    "matutulog", "pagkakaibigan", "pamilya", "pag-ibig", "pangarap",
+    "kaligayahan", "kapayapaan", "katarungan", "katotohanan", "kalayaan",
+    "paggalang", "pagmamahalan", "pasensya", "pananampalataya", "pag-asa",
+    "kabaitan", "katapangan", "karunungan", "kaginhawahan", "kasiyahan",
+    "pagkakaisa", "pagtulong", "pagbabago", "magandang", "masayang"
+];
+
+let currentWordIndex = Math.floor(Math.random() * spellWords.length);
+let targetWord = spellWords[currentWordIndex];
 const userInput = document.getElementById('userInput');
 const gameContainer = document.getElementById('gameContainer');
 const videoContainer = document.getElementById('videoContainer');
@@ -250,8 +260,28 @@ function clearAllRatings() {
     }
 }
 
+function selectNewRandomWord() {
+    currentWordIndex = Math.floor(Math.random() * spellWords.length);
+    targetWord = spellWords[currentWordIndex];
+    document.querySelector('.word-display').textContent = targetWord;
+    userInput.value = '';
+    userInput.classList.remove('correct', 'incorrect');
+    sendButton.disabled = false;
+    sendButton.textContent = 'Send';
+    userInput.focus();
+}
+
+function resetGame() {
+    gameContainer.classList.remove('fade-out');
+    videoContainer.classList.remove('show');
+    videoContainer.classList.add('hidden');
+    selectNewRandomWord();
+}
+
 // Focus input on load
 document.addEventListener('DOMContentLoaded', function() {
+    // Set initial random word
+    document.querySelector('.word-display').textContent = targetWord;
     userInput.focus();
     
     // Add event listeners for rating system
