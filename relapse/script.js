@@ -14,6 +14,69 @@ const gameContainer = document.getElementById('gameContainer');
 const videoContainer = document.getElementById('videoContainer');
 const video = document.getElementById('celebrationVideo');
 
+// Background music functionality
+let backgroundMusic;
+const backgroundMusicSources = [
+    "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav", // Placeholder - you can replace with actual music files
+    "https://www.soundjay.com/misc/sounds/church-bells-1.wav"   // Add your own music files to attached_assets folder
+];
+
+function initializeBackgroundMusic() {
+    backgroundMusic = new Audio();
+    backgroundMusic.loop = true;
+    backgroundMusic.volume = 0.3; // Default volume
+    
+    // Try to load a background music file (you can add your own to attached_assets)
+    // For now, we'll create a simple ambient sound using Web Audio API
+    createAmbientBackground();
+}
+
+function createAmbientBackground() {
+    try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        // Create a peaceful ambient tone
+        oscillator.frequency.setValueAtTime(220, audioContext.currentTime); // A3 note
+        oscillator.type = 'sine';
+        
+        gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 2);
+        
+        oscillator.start();
+        
+        // Store references for later control
+        window.ambientOscillator = oscillator;
+        window.ambientGain = gainNode;
+        window.ambientContext = audioContext;
+        
+    } catch (error) {
+        console.log('Web Audio not supported, using fallback');
+    }
+}
+
+function startBackgroundMusic() {
+    if (window.ambientContext && window.ambientGain) {
+        window.ambientGain.gain.linearRampToValueAtTime(0.1, window.ambientContext.currentTime + 1);
+    }
+}
+
+function fadeBackgroundMusic() {
+    if (window.ambientContext && window.ambientGain) {
+        window.ambientGain.gain.linearRampToValueAtTime(0.02, window.ambientContext.currentTime + 1);
+    }
+}
+
+function restoreBackgroundMusic() {
+    if (window.ambientContext && window.ambientGain) {
+        window.ambientGain.gain.linearRampToValueAtTime(0.1, window.ambientContext.currentTime + 1);
+    }
+}
+
 // Available video sources
 const videoSources = [
     "attached_assets/SnapTik-dot-Kim-f8ede9407dcbaa56f8d28e4e08097489_1751448850183.mp4",
@@ -69,6 +132,12 @@ function checkSpelling() {
 
             // Start automatic Bible verse rotation
             startBibleVerseRotation();
+            
+            // Start background music if not already playing
+            startBackgroundMusic();
+            
+            // Fade background music when video starts
+            fadeBackgroundMusic();
 
             // Select and load random video
             const randomVideoSource = videoSources[Math.floor(Math.random() * videoSources.length)];
@@ -78,6 +147,19 @@ function checkSpelling() {
             // Set up and play video with sound
             video.currentTime = 0;
             video.volume = 1.0; // Full volume
+            
+            // Add event listeners for background music control
+            video.addEventListener('play', () => {
+                fadeBackgroundMusic();
+            });
+            
+            video.addEventListener('pause', () => {
+                restoreBackgroundMusic();
+            });
+            
+            video.addEventListener('ended', () => {
+                restoreBackgroundMusic();
+            });
             
             // Try to play with sound first
             const playPromise = video.play();
@@ -285,7 +367,7 @@ function startBibleVerseRotation() {
                 bibleVerseElement.classList.remove('verse-fade-in');
             }, 500);
         }, 250);
-    }, 1000);
+    }, 5000);
 }
 
 function stopBibleVerseRotation() {
@@ -396,6 +478,7 @@ function resetGame() {
     videoContainer.classList.remove('show');
     videoContainer.classList.add('hidden');
     stopBibleVerseRotation();
+    restoreBackgroundMusic();
     selectNewRandomWord();
 }
 
@@ -404,6 +487,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Set initial random word
     document.querySelector('.word-display').textContent = targetWord;
     userInput.focus();
+    
+    // Initialize background music (will start when user completes spelling)
+    initializeBackgroundMusic();
     
     // Add event listeners for rating system
     document.getElementById('rateButton').addEventListener('click', openRatingModal);
