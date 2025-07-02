@@ -22,58 +22,59 @@ const backgroundMusicSources = [
 ];
 
 function initializeBackgroundMusic() {
-    backgroundMusic = new Audio();
+    backgroundMusic = new Audio('attached_assets/multo.mp3');
     backgroundMusic.loop = true;
     backgroundMusic.volume = 0.3; // Default volume
     
-    // Try to load a background music file (you can add your own to attached_assets)
-    // For now, we'll create a simple ambient sound using Web Audio API
-    createAmbientBackground();
-}
-
-function createAmbientBackground() {
-    try {
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        // Create a peaceful ambient tone
-        oscillator.frequency.setValueAtTime(220, audioContext.currentTime); // A3 note
-        oscillator.type = 'sine';
-        
-        gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-        gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 2);
-        
-        oscillator.start();
-        
-        // Store references for later control
-        window.ambientOscillator = oscillator;
-        window.ambientGain = gainNode;
-        window.ambientContext = audioContext;
-        
-    } catch (error) {
-        console.log('Web Audio not supported, using fallback');
-    }
+    // Handle loading errors
+    backgroundMusic.addEventListener('error', (e) => {
+        console.log('Background music failed to load:', e);
+    });
+    
+    backgroundMusic.addEventListener('canplaythrough', () => {
+        console.log('Background music loaded successfully');
+    });
 }
 
 function startBackgroundMusic() {
-    if (window.ambientContext && window.ambientGain) {
-        window.ambientGain.gain.linearRampToValueAtTime(0.1, window.ambientContext.currentTime + 1);
+    if (backgroundMusic) {
+        backgroundMusic.volume = 0.3;
+        const playPromise = backgroundMusic.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(error => {
+                console.log('Background music autoplay failed:', error);
+            });
+        }
     }
 }
 
 function fadeBackgroundMusic() {
-    if (window.ambientContext && window.ambientGain) {
-        window.ambientGain.gain.linearRampToValueAtTime(0.02, window.ambientContext.currentTime + 1);
+    if (backgroundMusic) {
+        // Gradually fade to very low volume
+        let currentVolume = backgroundMusic.volume;
+        const fadeInterval = setInterval(() => {
+            if (currentVolume > 0.05) {
+                currentVolume -= 0.02;
+                backgroundMusic.volume = Math.max(0.05, currentVolume);
+            } else {
+                clearInterval(fadeInterval);
+            }
+        }, 100);
     }
 }
 
 function restoreBackgroundMusic() {
-    if (window.ambientContext && window.ambientGain) {
-        window.ambientGain.gain.linearRampToValueAtTime(0.1, window.ambientContext.currentTime + 1);
+    if (backgroundMusic) {
+        // Gradually restore to normal volume
+        let currentVolume = backgroundMusic.volume;
+        const restoreInterval = setInterval(() => {
+            if (currentVolume < 0.3) {
+                currentVolume += 0.02;
+                backgroundMusic.volume = Math.min(0.3, currentVolume);
+            } else {
+                clearInterval(restoreInterval);
+            }
+        }, 100);
     }
 }
 
