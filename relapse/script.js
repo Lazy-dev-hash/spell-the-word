@@ -229,15 +229,38 @@ function openDashboard() {
     } else {
         ratingsContainer.innerHTML = ratings.map(rating => {
             const ratingComments = comments[rating.id] || [];
-            const commentsHtml = ratingComments.map(comment => `
-                <div class="comment-item">
-                    <div class="comment-header">
-                        <span class="commenter-name">${comment.commenter}</span>
-                        <span class="comment-date">${comment.timestamp}</span>
+            
+            // Group comments by user
+            const groupedComments = {};
+            ratingComments.forEach(comment => {
+                if (!groupedComments[comment.commenter]) {
+                    groupedComments[comment.commenter] = [];
+                }
+                groupedComments[comment.commenter].push(comment);
+            });
+            
+            const commentsHtml = Object.keys(groupedComments).map(commenterName => {
+                const userComments = groupedComments[commenterName];
+                const userCommentsHtml = userComments.map(comment => `
+                    <div class="comment-item">
+                        <div class="comment-content">
+                            <div class="comment-text">${comment.comment}</div>
+                        </div>
                     </div>
-                    <div class="comment-text">${comment.comment}</div>
-                </div>
-            `).join('');
+                `).join('');
+                
+                return `
+                    <div class="user-comment-group">
+                        <div class="user-header">
+                            <div class="user-name">${commenterName}</div>
+                            <div class="user-date">${userComments[0].timestamp}</div>
+                        </div>
+                        <div class="user-comments-container">
+                            ${userCommentsHtml}
+                        </div>
+                    </div>
+                `;
+            }).join('');
             
             return `
                 <div class="rating-card">
@@ -251,13 +274,13 @@ function openDashboard() {
                     <div class="rating-message">${rating.message}</div>
                     
                     <div class="comments-section">
-                        <div class="comments-header">Comments (${ratingComments.length})</div>
+                        <div class="comments-header">💬 Community Discussion (${ratingComments.length} comments)</div>
                         <div class="comments-list">${commentsHtml}</div>
                         
                         <div class="add-comment-form">
                             <input type="text" placeholder="Your name..." class="comment-name-input" id="commentName_${rating.id}">
                             <textarea placeholder="Add a comment..." class="comment-input" id="commentText_${rating.id}"></textarea>
-                            <button onclick="addComment(${rating.id})" class="add-comment-btn">💬 Comment</button>
+                            <button onclick="addComment(${rating.id})" class="add-comment-btn">💬 Join Discussion</button>
                         </div>
                     </div>
                 </div>
