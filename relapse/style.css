@@ -677,15 +677,28 @@ button:hover {
   display: none;
 }
 
-/* Action Buttons */
-.action-buttons {
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
+/* Video Action Buttons */
+.video-action-buttons {
+  width: 100%;
+  max-width: 600px;
+  margin: 20px auto 0 auto;
+  text-align: center;
+}
+
+.rate-text {
+  font-size: 1.3em;
+  color: #ff6b6b;
+  font-weight: 700;
+  margin-bottom: 20px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  letter-spacing: 1px;
+}
+
+.video-buttons {
   display: flex;
-  flex-direction: column;
   gap: 15px;
-  z-index: 1000;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
 .action-btn {
@@ -968,9 +981,9 @@ button:hover {
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
-  .action-buttons {
-    bottom: 20px;
-    right: 20px;
+  .video-buttons {
+    flex-direction: column;
+    align-items: center;
     gap: 10px;
   }
 
@@ -978,6 +991,11 @@ button:hover {
     padding: 12px 20px;
     font-size: 0.9em;
     min-width: 140px;
+  }
+
+  .rate-text {
+    font-size: 1.1em;
+    margin-bottom: 15px;
   }
 
   .modal-content {
