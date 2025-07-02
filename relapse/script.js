@@ -67,9 +67,8 @@ function checkSpelling() {
             gameContainer.classList.add('fade-out');
             videoContainer.classList.add('show');
 
-            // Display random Bible verse
-            const randomVerse = bibleVerses[Math.floor(Math.random() * bibleVerses.length)];
-            document.getElementById('bibleVerse').textContent = randomVerse;
+            // Start automatic Bible verse rotation
+            startBibleVerseRotation();
 
             // Select and load random video
             const randomVideoSource = videoSources[Math.floor(Math.random() * videoSources.length)];
@@ -252,6 +251,50 @@ function getUserId() {
     return userId;
 }
 
+// Bible verse rotation functionality
+let verseRotationInterval;
+let currentVerseIndex = 0;
+
+function startBibleVerseRotation() {
+    const bibleVerseElement = document.getElementById('bibleVerse');
+    
+    // Set initial verse
+    currentVerseIndex = Math.floor(Math.random() * bibleVerses.length);
+    bibleVerseElement.textContent = bibleVerses[currentVerseIndex];
+    
+    // Start rotation
+    verseRotationInterval = setInterval(() => {
+        // Add fade out animation
+        bibleVerseElement.classList.add('verse-fade-out');
+        
+        setTimeout(() => {
+            // Change to next random verse
+            let newIndex;
+            do {
+                newIndex = Math.floor(Math.random() * bibleVerses.length);
+            } while (newIndex === currentVerseIndex && bibleVerses.length > 1);
+            
+            currentVerseIndex = newIndex;
+            bibleVerseElement.textContent = bibleVerses[currentVerseIndex];
+            
+            // Add fade in animation
+            bibleVerseElement.classList.remove('verse-fade-out');
+            bibleVerseElement.classList.add('verse-fade-in');
+            
+            setTimeout(() => {
+                bibleVerseElement.classList.remove('verse-fade-in');
+            }, 500);
+        }, 250);
+    }, 1000);
+}
+
+function stopBibleVerseRotation() {
+    if (verseRotationInterval) {
+        clearInterval(verseRotationInterval);
+        verseRotationInterval = null;
+    }
+}
+
 // Dashboard Functions
 function openDashboard() {
     const ratings = JSON.parse(localStorage.getItem('websiteRatings') || '[]');
@@ -352,6 +395,7 @@ function resetGame() {
     gameContainer.classList.remove('fade-out');
     videoContainer.classList.remove('show');
     videoContainer.classList.add('hidden');
+    stopBibleVerseRotation();
     selectNewRandomWord();
 }
 
