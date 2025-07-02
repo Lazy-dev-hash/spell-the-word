@@ -22,7 +22,7 @@ const backgroundMusicSources = [
 ];
 
 function initializeBackgroundMusic() {
-    backgroundMusic = new Audio('Multo.mp3');
+    backgroundMusic = new Audio('../Multo.mp3');
     backgroundMusic.loop = true;
     backgroundMusic.volume = 0.3; // Default volume
     
