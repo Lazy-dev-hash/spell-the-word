@@ -202,65 +202,68 @@ function submitRating() {
     closeRatingModal();
 }
 
-// Store comments in localStorage
-function saveComment(ratingId, comment, commenterName) {
-    const comments = JSON.parse(localStorage.getItem('ratingComments') || '{}');
-    if (!comments[ratingId]) {
-        comments[ratingId] = [];
+// Store heart reactions in localStorage
+function saveHeartReaction(ratingId, userId) {
+    const reactions = JSON.parse(localStorage.getItem('ratingReactions') || '{}');
+    if (!reactions[ratingId]) {
+        reactions[ratingId] = [];
     }
-    const newComment = {
-        id: Date.now(),
-        comment: comment,
-        commenter: commenterName,
-        timestamp: new Date().toLocaleString()
-    };
-    comments[ratingId].push(newComment);
-    localStorage.setItem('ratingComments', JSON.stringify(comments));
+    
+    // Check if user already reacted
+    const existingReaction = reactions[ratingId].find(r => r.userId === userId);
+    if (!existingReaction) {
+        reactions[ratingId].push({
+            userId: userId,
+            timestamp: new Date().toLocaleString()
+        });
+        localStorage.setItem('ratingReactions', JSON.stringify(reactions));
+        return true; // New reaction added
+    }
+    return false; // User already reacted
+}
+
+function removeHeartReaction(ratingId, userId) {
+    const reactions = JSON.parse(localStorage.getItem('ratingReactions') || '{}');
+    if (reactions[ratingId]) {
+        reactions[ratingId] = reactions[ratingId].filter(r => r.userId !== userId);
+        localStorage.setItem('ratingReactions', JSON.stringify(reactions));
+        return true;
+    }
+    return false;
+}
+
+function getReactionCount(ratingId) {
+    const reactions = JSON.parse(localStorage.getItem('ratingReactions') || '{}');
+    return reactions[ratingId] ? reactions[ratingId].length : 0;
+}
+
+function hasUserReacted(ratingId, userId) {
+    const reactions = JSON.parse(localStorage.getItem('ratingReactions') || '{}');
+    return reactions[ratingId] ? reactions[ratingId].some(r => r.userId === userId) : false;
+}
+
+// Generate or get user ID for reactions
+function getUserId() {
+    let userId = localStorage.getItem('userId');
+    if (!userId) {
+        userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('userId', userId);
+    }
+    return userId;
 }
 
 // Dashboard Functions
 function openDashboard() {
     const ratings = JSON.parse(localStorage.getItem('websiteRatings') || '[]');
-    const comments = JSON.parse(localStorage.getItem('ratingComments') || '{}');
     const ratingsContainer = document.getElementById('ratingsContainer');
+    const currentUserId = getUserId();
     
     if (ratings.length === 0) {
         ratingsContainer.innerHTML = '<p class="no-ratings">No ratings yet</p>';
     } else {
         ratingsContainer.innerHTML = ratings.map(rating => {
-            const ratingComments = comments[rating.id] || [];
-            
-            // Group comments by user
-            const groupedComments = {};
-            ratingComments.forEach(comment => {
-                if (!groupedComments[comment.commenter]) {
-                    groupedComments[comment.commenter] = [];
-                }
-                groupedComments[comment.commenter].push(comment);
-            });
-            
-            const commentsHtml = Object.keys(groupedComments).map(commenterName => {
-                const userComments = groupedComments[commenterName];
-                const userCommentsHtml = userComments.map(comment => `
-                    <div class="comment-item">
-                        <div class="comment-content">
-                            <div class="comment-text">${comment.comment}</div>
-                        </div>
-                    </div>
-                `).join('');
-                
-                return `
-                    <div class="user-comment-group">
-                        <div class="user-header">
-                            <div class="user-name">${commenterName}</div>
-                            <div class="user-date">${userComments[0].timestamp}</div>
-                        </div>
-                        <div class="user-comments-container">
-                            ${userCommentsHtml}
-                        </div>
-                    </div>
-                `;
-            }).join('');
+            const reactionCount = getReactionCount(rating.id);
+            const hasReacted = hasUserReacted(rating.id, currentUserId);
             
             return `
                 <div class="rating-card">
@@ -273,14 +276,19 @@ function openDashboard() {
                     <div class="rating-sender">From: ${rating.sender}</div>
                     <div class="rating-message">${rating.message}</div>
                     
-                    <div class="comments-section">
-                        <div class="comments-header">💬 Community Discussion (${ratingComments.length} comments)</div>
-                        <div class="comments-list">${commentsHtml}</div>
-                        
-                        <div class="add-comment-form">
-                            <input type="text" placeholder="Your name..." class="comment-name-input" id="commentName_${rating.id}">
-                            <textarea placeholder="Add a comment..." class="comment-input" id="commentText_${rating.id}"></textarea>
-                            <button onclick="addComment(${rating.id})" class="add-comment-btn">💬 Join Discussion</button>
+                    <div class="heart-reaction-section">
+                        <div class="heart-container">
+                            <button onclick="toggleHeartReaction(${rating.id})" 
+                                    class="heart-btn ${hasReacted ? 'liked' : ''}" 
+                                    id="heartBtn_${rating.id}">
+                                <span class="heart-icon">❤️</span>
+                                <span class="heart-count" id="heartCount_${rating.id}">${reactionCount}</span>
+                            </button>
+                            <div class="reaction-text">
+                                ${reactionCount === 0 ? 'Be the first to love this!' : 
+                                  reactionCount === 1 ? '1 person loves this' : 
+                                  `${reactionCount} people love this`}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -295,28 +303,38 @@ function closeDashboard() {
     document.getElementById('dashboard').classList.remove('show');
 }
 
-function addComment(ratingId) {
-    const commenterName = document.getElementById(`commentName_${ratingId}`).value.trim();
-    const commentText = document.getElementById(`commentText_${ratingId}`).value.trim();
+function toggleHeartReaction(ratingId) {
+    const currentUserId = getUserId();
+    const heartBtn = document.getElementById(`heartBtn_${ratingId}`);
+    const heartCount = document.getElementById(`heartCount_${ratingId}`);
     
-    if (!commenterName) {
-        alert('Please enter your name');
-        return;
+    if (hasUserReacted(ratingId, currentUserId)) {
+        // Remove reaction
+        removeHeartReaction(ratingId, currentUserId);
+        heartBtn.classList.remove('liked');
+        
+        // Add animation for unlike
+        heartBtn.classList.add('unliked');
+        setTimeout(() => heartBtn.classList.remove('unliked'), 300);
+    } else {
+        // Add reaction
+        saveHeartReaction(ratingId, currentUserId);
+        heartBtn.classList.add('liked');
+        
+        // Add animation for like
+        heartBtn.classList.add('pulse');
+        setTimeout(() => heartBtn.classList.remove('pulse'), 600);
     }
     
-    if (!commentText) {
-        alert('Please enter a comment');
-        return;
-    }
+    // Update count and text
+    const newCount = getReactionCount(ratingId);
+    heartCount.textContent = newCount;
     
-    saveComment(ratingId, commentText, commenterName);
-    
-    // Clear inputs
-    document.getElementById(`commentName_${ratingId}`).value = '';
-    document.getElementById(`commentText_${ratingId}`).value = '';
-    
-    // Refresh dashboard
-    openDashboard();
+    // Update reaction text
+    const reactionText = heartBtn.parentElement.querySelector('.reaction-text');
+    reactionText.textContent = newCount === 0 ? 'Be the first to love this!' : 
+                              newCount === 1 ? '1 person loves this' : 
+                              `${newCount} people love this`;
 }
 
 function selectNewRandomWord() {
