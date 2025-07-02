@@ -834,14 +834,14 @@ button:hover {
   box-shadow: 0 12px 30px rgba(255, 107, 107, 0.4);
 }
 
-.admin-btn {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+.dashboard-btn {
+  background: linear-gradient(135deg, #6c5ce7, #a29bfe);
   color: white;
 }
 
-.admin-btn:hover {
+.dashboard-btn:hover {
   transform: translateY(-3px);
-  box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 12px 30px rgba(108, 92, 231, 0.4);
 }
 
 /* Modal Styles */
@@ -1002,10 +1002,27 @@ button:hover {
   width: 400px;
 }
 
-/* Admin Dashboard Modal */
-.admin-dashboard-modal {
-  width: 800px;
-  min-height: 600px;
+/* Public Dashboard Modal */
+.dashboard-modal {
+  width: 900px;
+  min-height: 700px;
+}
+
+.dashboard-description {
+  text-align: center;
+  margin-bottom: 30px;
+  padding: 20px;
+  background: linear-gradient(135deg, rgba(108, 92, 231, 0.1), rgba(162, 155, 254, 0.1));
+  border-radius: 15px;
+  border: 2px solid rgba(108, 92, 231, 0.2);
+}
+
+.dashboard-description p {
+  color: #4a5568;
+  font-size: 1.2em;
+  font-weight: 600;
+  margin: 0;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .ratings-container {
@@ -1072,21 +1089,123 @@ button:hover {
   font-style: italic;
 }
 
-.clear-btn {
-  padding: 10px 20px;
-  background: linear-gradient(135deg, #e53e3e, #c53030);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-size: 1em;
+.comments-section {
+  margin-top: 20px;
+  border-top: 2px solid rgba(108, 92, 231, 0.1);
+  padding-top: 20px;
+}
+
+.comments-header {
+  font-size: 1.1em;
   font-weight: 600;
-  cursor: pointer;
+  color: #6c5ce7;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.comments-header::before {
+  content: '💬';
+  font-size: 1.2em;
+}
+
+.comments-list {
+  margin-bottom: 20px;
+}
+
+.comment-item {
+  background: linear-gradient(135deg, rgba(108, 92, 231, 0.05), rgba(162, 155, 254, 0.05));
+  border: 1px solid rgba(108, 92, 231, 0.15);
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 12px;
+  position: relative;
   transition: all 0.3s ease;
 }
 
-.clear-btn:hover {
+.comment-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(108, 92, 231, 0.1);
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.commenter-name {
+  font-weight: 600;
+  color: #6c5ce7;
+  font-size: 0.95em;
+}
+
+.comment-date {
+  color: #718096;
+  font-size: 0.8em;
+}
+
+.comment-text {
+  color: #4a5568;
+  line-height: 1.5;
+  font-size: 0.95em;
+}
+
+.add-comment-form {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 250, 252, 0.9));
+  border: 2px solid rgba(108, 92, 231, 0.15);
+  border-radius: 15px;
+  padding: 20px;
+  margin-top: 15px;
+}
+
+.comment-name-input, .comment-input {
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 12px 15px;
+  border: 2px solid rgba(108, 92, 231, 0.2);
+  border-radius: 10px;
+  font-size: 0.95em;
+  color: #4a5568;
+  background: rgba(255, 255, 255, 0.8);
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.comment-name-input:focus, .comment-input:focus {
+  border-color: #6c5ce7;
+  box-shadow: 0 0 15px rgba(108, 92, 231, 0.2);
+  transform: scale(1.01);
+}
+
+.comment-input {
+  height: 80px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.add-comment-btn {
+  background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 20px;
+  font-size: 0.95em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.add-comment-btn:hover {
+  background: linear-gradient(135deg, #5a4fcf, #9085e8);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(229, 62, 62, 0.4);
+  box-shadow: 0 6px 20px rgba(108, 92, 231, 0.3);
 }
 
 /* Mobile Responsive */
@@ -1118,9 +1237,48 @@ button:hover {
     width: 100%;
   }
 
-  .admin-dashboard-modal {
+  .dashboard-modal {
     width: 100%;
     min-height: 70vh;
+  }
+
+  .dashboard-description {
+    margin-bottom: 20px;
+    padding: 15px;
+  }
+
+  .dashboard-description p {
+    font-size: 1em;
+  }
+
+  .comment-item {
+    padding: 12px;
+  }
+
+  .comment-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+
+  .add-comment-form {
+    padding: 15px;
+  }
+
+  .comment-name-input, .comment-input {
+    padding: 10px 12px;
+    font-size: 0.9em;
+  }
+
+  .comment-input {
+    height: 70px;
+  }
+
+  .add-comment-btn {
+    padding: 10px 16px;
+    font-size: 0.9em;
+    width: 100%;
+    justify-content: center;
   }
 
   .modal-header {

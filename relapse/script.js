@@ -202,62 +202,98 @@ function submitRating() {
     closeRatingModal();
 }
 
-// Admin Dashboard Functions
-function openAdminLogin() {
-    document.getElementById('adminLoginModal').classList.add('show');
-}
-
-function closeAdminLogin() {
-    document.getElementById('adminLoginModal').classList.remove('show');
-    document.getElementById('adminId').value = '';
-    document.getElementById('adminPassword').value = '';
-}
-
-function adminLogin() {
-    const adminId = document.getElementById('adminId').value;
-    const adminPassword = document.getElementById('adminPassword').value;
-    
-    if (adminId === adminCredentials.id && adminPassword === adminCredentials.password) {
-        closeAdminLogin();
-        openAdminDashboard();
-    } else {
-        alert('Invalid credentials');
+// Store comments in localStorage
+function saveComment(ratingId, comment, commenterName) {
+    const comments = JSON.parse(localStorage.getItem('ratingComments') || '{}');
+    if (!comments[ratingId]) {
+        comments[ratingId] = [];
     }
+    const newComment = {
+        id: Date.now(),
+        comment: comment,
+        commenter: commenterName,
+        timestamp: new Date().toLocaleString()
+    };
+    comments[ratingId].push(newComment);
+    localStorage.setItem('ratingComments', JSON.stringify(comments));
 }
 
-function openAdminDashboard() {
+// Dashboard Functions
+function openDashboard() {
     const ratings = JSON.parse(localStorage.getItem('websiteRatings') || '[]');
+    const comments = JSON.parse(localStorage.getItem('ratingComments') || '{}');
     const ratingsContainer = document.getElementById('ratingsContainer');
     
     if (ratings.length === 0) {
         ratingsContainer.innerHTML = '<p class="no-ratings">No ratings yet</p>';
     } else {
-        ratingsContainer.innerHTML = ratings.map(rating => `
-            <div class="rating-card">
-                <div class="rating-header">
-                    <div class="rating-stars">
-                        ${'★'.repeat(rating.rating)}${'☆'.repeat(5 - rating.rating)}
+        ratingsContainer.innerHTML = ratings.map(rating => {
+            const ratingComments = comments[rating.id] || [];
+            const commentsHtml = ratingComments.map(comment => `
+                <div class="comment-item">
+                    <div class="comment-header">
+                        <span class="commenter-name">${comment.commenter}</span>
+                        <span class="comment-date">${comment.timestamp}</span>
                     </div>
-                    <div class="rating-date">${rating.timestamp}</div>
+                    <div class="comment-text">${comment.comment}</div>
                 </div>
-                <div class="rating-sender">From: ${rating.sender}</div>
-                <div class="rating-message">${rating.message}</div>
-            </div>
-        `).join('');
+            `).join('');
+            
+            return `
+                <div class="rating-card">
+                    <div class="rating-header">
+                        <div class="rating-stars">
+                            ${'★'.repeat(rating.rating)}${'☆'.repeat(5 - rating.rating)}
+                        </div>
+                        <div class="rating-date">${rating.timestamp}</div>
+                    </div>
+                    <div class="rating-sender">From: ${rating.sender}</div>
+                    <div class="rating-message">${rating.message}</div>
+                    
+                    <div class="comments-section">
+                        <div class="comments-header">Comments (${ratingComments.length})</div>
+                        <div class="comments-list">${commentsHtml}</div>
+                        
+                        <div class="add-comment-form">
+                            <input type="text" placeholder="Your name..." class="comment-name-input" id="commentName_${rating.id}">
+                            <textarea placeholder="Add a comment..." class="comment-input" id="commentText_${rating.id}"></textarea>
+                            <button onclick="addComment(${rating.id})" class="add-comment-btn">💬 Comment</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
     }
     
-    document.getElementById('adminDashboard').classList.add('show');
+    document.getElementById('dashboard').classList.add('show');
 }
 
-function closeAdminDashboard() {
-    document.getElementById('adminDashboard').classList.remove('show');
+function closeDashboard() {
+    document.getElementById('dashboard').classList.remove('show');
 }
 
-function clearAllRatings() {
-    if (confirm('Are you sure you want to delete all ratings?')) {
-        localStorage.removeItem('websiteRatings');
-        openAdminDashboard(); // Refresh the dashboard
+function addComment(ratingId) {
+    const commenterName = document.getElementById(`commentName_${ratingId}`).value.trim();
+    const commentText = document.getElementById(`commentText_${ratingId}`).value.trim();
+    
+    if (!commenterName) {
+        alert('Please enter your name');
+        return;
     }
+    
+    if (!commentText) {
+        alert('Please enter a comment');
+        return;
+    }
+    
+    saveComment(ratingId, commentText, commenterName);
+    
+    // Clear inputs
+    document.getElementById(`commentName_${ratingId}`).value = '';
+    document.getElementById(`commentText_${ratingId}`).value = '';
+    
+    // Refresh dashboard
+    openDashboard();
 }
 
 function selectNewRandomWord() {
@@ -286,14 +322,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Add event listeners for rating system
     document.getElementById('rateButton').addEventListener('click', openRatingModal);
-    document.getElementById('adminButton').addEventListener('click', openAdminLogin);
+    document.getElementById('dashboardButton').addEventListener('click', openDashboard);
     
     // Add click outside to close modals
     document.addEventListener('click', function(e) {
         if (e.target.classList.contains('modal')) {
             if (e.target.id === 'ratingModal') closeRatingModal();
-            if (e.target.id === 'adminLoginModal') closeAdminLogin();
-            if (e.target.id === 'adminDashboard') closeAdminDashboard();
+            if (e.target.id === 'dashboard') closeDashboard();
         }
     });
 });

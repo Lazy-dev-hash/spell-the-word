@@ -39,7 +39,7 @@
         <div class="rate-text">rate mo nga po HAHAHAHA</div>
         <div class="video-buttons">
           <button id="rateButton" class="action-btn rate-btn">Rate This Website</button>
-          <button id="adminButton" class="action-btn admin-btn">Admin Dashboard</button>
+          <button id="dashboardButton" class="action-btn dashboard-btn">Dashboard</button>
         </div>
       </div>
     </div>
@@ -79,40 +79,19 @@
     </div>
   </div>
 
-  <!-- Admin Login Modal -->
-  <div id="adminLoginModal" class="modal">
-    <div class="modal-content admin-login-modal">
+  <!-- Public Dashboard Modal -->
+  <div id="dashboard" class="modal">
+    <div class="modal-content dashboard-modal">
       <div class="modal-header">
-        <h2>Admin Login</h2>
-        <span class="close-btn" onclick="closeAdminLogin()">&times;</span>
-      </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <label>Admin ID:</label>
-          <input type="text" id="adminId" placeholder="Enter admin ID" class="form-input">
-        </div>
-        
-        <div class="form-group">
-          <label>Password:</label>
-          <input type="password" id="adminPassword" placeholder="Enter password" class="form-input">
-        </div>
-        
-        <button onclick="adminLogin()" class="submit-btn">Login</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Admin Dashboard Modal -->
-  <div id="adminDashboard" class="modal">
-    <div class="modal-content admin-dashboard-modal">
-      <div class="modal-header">
-        <h2>Admin Dashboard</h2>
+        <h2>🌟 Community Dashboard</h2>
         <div class="header-actions">
-          <button onclick="clearAllRatings()" class="clear-btn">Clear All</button>
-          <span class="close-btn" onclick="closeAdminDashboard()">&times;</span>
+          <span class="close-btn" onclick="closeDashboard()">&times;</span>
         </div>
       </div>
       <div class="modal-body">
+        <div class="dashboard-description">
+          <p>✨ See what others think about this website and join the conversation! ✨</p>
+        </div>
         <div id="ratingsContainer" class="ratings-container">
           <!-- Ratings will be loaded here -->
         </div>
