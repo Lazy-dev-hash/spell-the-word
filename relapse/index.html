@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Spell Matutulog</title>
+  <link href="style.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+  <div id="gameContainer" class="game-container">
+    <div class="content">
+      <h1>Spell the word</h1>
+      <div class="word-display">matutulog</div>
+      <div class="input-container">
+        <input type="text" id="userInput" placeholder="Type here..." maxlength="9">
+        <button id="sendButton" class="send-btn">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="videoContainer" class="video-container hidden">
+    <div class="video-content">
+      <video id="celebrationVideo">
+        <source src="attached_assets/SnapTik-dot-Kim-f8ede9407dcbaa56f8d28e4e08097489_1751448850183.mp4" type="video/mp4">
+      </video>
+      <div class="bible-verse-container">
+        <div class="bible-verse" id="bibleVerse"></div>
+      </div>
+      <div class="credit-container">
+        <div class="credit-text">made by Sunnel John Rebano</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rating and Admin Buttons -->
+  <div class="action-buttons">
+    <button id="rateButton" class="action-btn rate-btn">Rate This Website</button>
+    <button id="adminButton" class="action-btn admin-btn">Admin Dashboard</button>
+  </div>
+
+  <!-- Rating Modal -->
+  <div id="ratingModal" class="modal">
+    <div class="modal-content rating-modal">
+      <div class="modal-header">
+        <h2>Rate Our Website</h2>
+        <span class="close-btn" onclick="closeRatingModal()">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Your Name:</label>
+          <input type="text" id="senderName" placeholder="Enter your name" class="form-input">
+        </div>
+        
+        <div class="form-group">
+          <label>Rating:</label>
+          <div class="stars-container">
+            <span class="star" onclick="setRating(1)">★</span>
+            <span class="star" onclick="setRating(2)">★</span>
+            <span class="star" onclick="setRating(3)">★</span>
+            <span class="star" onclick="setRating(4)">★</span>
+            <span class="star" onclick="setRating(5)">★</span>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label>Message:</label>
+          <textarea id="ratingMessage" placeholder="Tell us about your experience..." class="form-textarea"></textarea>
+        </div>
+        
+        <button onclick="submitRating()" class="submit-btn">Submit Rating</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Login Modal -->
+  <div id="adminLoginModal" class="modal">
+    <div class="modal-content admin-login-modal">
+      <div class="modal-header">
+        <h2>Admin Login</h2>
+        <span class="close-btn" onclick="closeAdminLogin()">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Admin ID:</label>
+          <input type="text" id="adminId" placeholder="Enter admin ID" class="form-input">
+        </div>
+        
+        <div class="form-group">
+          <label>Password:</label>
+          <input type="password" id="adminPassword" placeholder="Enter password" class="form-input">
+        </div>
+        
+        <button onclick="adminLogin()" class="submit-btn">Login</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Dashboard Modal -->
+  <div id="adminDashboard" class="modal">
+    <div class="modal-content admin-dashboard-modal">
+      <div class="modal-header">
+        <h2>Admin Dashboard</h2>
+        <div class="header-actions">
+          <button onclick="clearAllRatings()" class="clear-btn">Clear All</button>
+          <span class="close-btn" onclick="closeAdminDashboard()">&times;</span>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div id="ratingsContainer" class="ratings-container">
+          <!-- Ratings will be loaded here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
